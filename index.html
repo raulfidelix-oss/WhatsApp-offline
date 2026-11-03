@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="DENTE AZUL — mensagens sem internet via Bluetooth LE Mesh. Conecte-se em qualquer lugar, mesmo sem sinal."
+    />
+    <title>DENTE AZUL | Offline & Secure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              mono: ['Roboto Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+            },
+            boxShadow: {
+              glow: '0 0 0 1px rgba(255,255,255,0.06), 0 18px 50px rgba(12, 12, 12, 0.8)',
+            },
+            colors: {
+              carbon: '#0B0B0B',
+              panel: '#161616',
+              panelSoft: '#1D1D1D',
+              borderSoft: '#262626',
+              textSoft: '#A1A1AA',
+              accent: '#F5F5F5',
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #000000;
+        --bg-soft: #0b0b0b;
+        --panel: #161616;
+        --panel-strong: #1c1c1c;
+        --border: rgba(255,255,255,0.08);
+        --text: #ffffff;
+        --muted: #a1a1aa;
+        --ghost: rgba(255,255,255,0.04);
+        --white-soft: #f5f5f5;
+        --shadow: rgba(0, 0, 0, 0.42);
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background:
+          radial-gradient(circle at top, rgba(255,255,255,0.08), transparent 32%),
+          radial-gradient(circle at 20% 30%, rgba(255,255,255,0.04), transparent 28%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      .mesh-bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+        background-size: 32px 32px;
+        mask-image: radial-gradient(circle at center, black 38%, transparent 100%);
+      }
+
+      .glass-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+        border: 1px solid var(--border);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      }
+
+      .tech-pill {
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .hero-glow {
+        position: absolute;
+        width: 440px;
+        height: 440px;
+        background: radial-gradient(circle, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 40%, transparent 70%);
+        filter: blur(16px);
+        pointer-events: none;
+      }
+
+      .chip {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+
+      .phone-shell {
+        position: relative;
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+        border-radius: 32px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: linear-gradient(180deg, #101010 0%, #0d0d0d 100%);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.05);
+        overflow: hidden;
+      }
+
+      .phone-screen {
+        position: relative;
+        min-height: 700px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      }
+
+      .message-bubble {
+        border-radius: 18px;
+        max-width: 78%;
+        padding: 0.7rem 0.8rem 0.55rem;
+        line-height: 1.35;
+      }
+
+      .chat-input {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+
+      .theme-swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 9999px;
+        border: 1px solid rgba(255,255,255,0.12);
+      }
+
+      .theme-dark {
+        --bg: #000000;
+        --bg-soft: #0b0b0b;
+        --panel: #161616;
+        --panel-strong: #1c1c1c;
+        --border: rgba(255,255,255,0.08);
+        --text: #ffffff;
+        --muted: #a1a1aa;
+        --ghost: rgba(255,255,255,0.03);
+      }
+
+      .theme-neutral {
+        --bg: #111111;
+        --bg-soft: #171717;
+        --panel: #1d1d1d;
+        --panel-strong: #242424;
+        --border: rgba(255,255,255,0.07);
+        --text: #f4f4f5;
+        --muted: #b2b2b9;
+        --ghost: rgba(255,255,255,0.04);
+      }
+
+      .theme-light {
+        --bg: #f5f5f5;
+        --bg-soft: #ffffff;
+        --panel: #e7e7e7;
+        --panel-strong: #ffffff;
+        --border: rgba(0,0,0,0.08);
+        --text: #111111;
+        --muted: #4b5563;
+        --ghost: rgba(0,0,0,0.03);
+      }
+
+      .theme-dark .phone-shell,
+      .theme-neutral .phone-shell,
+      .theme-light .phone-shell {
+        transition: all 0.3s ease;
+      }
+
+      .theme-light .phone-shell {
+        background: linear-gradient(180deg, #ffffff 0%, #efefef 100%);
+        border: 1px solid rgba(0,0,0,0.08);
+      }
+
+      .theme-light .chat-input {
+        background: rgba(0,0,0,0.04);
+        border-color: rgba(0,0,0,0.06);
+      }
+
+      .theme-light .message-bubble {
+        color: #111111;
+      }
+
+      .theme-light .meta-label,
+      .theme-light .muted-light {
+        color: var(--muted);
+      }
+
+      .floating {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .float-delay {
+        animation-delay: 1.5s;
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .phone-screen {
+          min-height: 620px;
+        }
+      }
+    </style>
+  </head>
+  <body class="theme-dark antialiased selection:bg-white/10 selection:text-white">
+    <div class="relative overflow-hidden">
+      <div class="mesh-bg"></div>
+      <header class="relative z-20 mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <nav class="glass-card flex items-center justify-between rounded-full px-4 py-3 sm:px-6">
+          <a href="#top" class="flex items-center gap-3" aria-label="DENTE AZUL home">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+              <svg viewBox="0 0 48 48" class="h-5 w-5 text-white" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 19C10 13.4772 14.4772 9 20 9H28C33.5228 9 38 13.4772 38 19V23C38 28.5228 33.5228 33 28 33H24L18 39V33H20C14.4772 33 10 28.5228 10 23V19Z" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="18" cy="21" r="2.5" fill="currentColor"/>
+                <circle cx="24" cy="21" r="2.5" fill="currentColor"/>
+                <circle cx="30" cy="21" r="2.5" fill="currentColor"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-[0.62rem] uppercase tracking-[0.28em] text-white/55">Mesh</div>
+              <div class="font-semibold tracking-[0.18em] text-white">DENTE AZUL</div>
+            </div>
+          </a>
+
+          <div class="hidden items-center gap-8 md:flex">
+            <a class="text-sm text-white/70 transition hover:text-white" href="#how">Como Funciona</a>
+            <a class="text-sm text-white/70 transition hover:text-white" href="#features">Recursos</a>
+            <a class="text-sm text-white/70 transition hover:text-white" href="#cases">Casos de Uso</a>
+            <a class="text-sm text-white/70 transition hover:text-white" href="#download">Download</a>
+          </div>
+
+          <a href="#download" class="inline-flex items-center justify-center rounded-full border border-white/15 bg-white px-4 py-2 text-sm font-medium text-black transition hover:-translate-y-0.5 hover:bg-white/90">Baixar APK</a>
+        </nav>
+      </header>
+
+      <main id="top" class="relative z-10">
+        <section class="mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 lg:px-8 lg:pb-24 lg:pt-16">
+          <div class="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+            <div class="relative">
+              <div class="hero-glow left-[-60px] top-[-40px]"></div>
+              <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[0.62rem] font-medium uppercase tracking-[0.22em] text-white/70">
+                <span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]"></span>
+                100% offline • BLE Mesh
+              </div>
+
+              <h1 class="max-w-xl text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl lg:text-7xl">
+                Mensagens Sem Internet.<br />Em Qualquer Lugar.
+              </h1>
+
+              <p class="mt-6 max-w-xl text-base leading-7 text-white/65 sm:text-lg">
+                Conecte-se com pessoas próximas via Bluetooth LE Mesh. Perfeito para voos, festivais, áreas sem sinal e situações de emergência.
+              </p>
+
+              <div class="mt-8 flex flex-col gap-4 sm:flex-row">
+                <button class="cta-btn inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black transition hover:-translate-y-0.5 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-white/50">
+                  Baixar para Android
+                </button>
+                <a href="https://github.com/" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center rounded-full border border-white/15 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/5">
+                  Ver no GitHub
+                </a>
+              </div>
+
+              <div class="mt-10 flex flex-wrap items-center gap-4 text-sm text-white/55">
+                <div class="chip flex items-center gap-2 rounded-full px-3 py-2">
+                  <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                  P2P em até 30m
+                </div>
+                <div class="chip flex items-center gap-2 rounded-full px-3 py-2">
+                  <span class="h-2.5 w-2.5 rounded-full bg-cyan-400"></span>
+                  Criptografia ponta a ponta
+                </div>
+              </div>
+            </div>
+
+            <div class="relative">
+              <div class="floating absolute -left-8 top-10 h-40 w-40 rounded-full border border-white/10 bg-white/5 blur-3xl"></div>
+              <div class="floating float-delay absolute -right-10 bottom-10 h-52 w-52 rounded-full border border-white/10 bg-white/5 blur-3xl"></div>
+
+              <div class="relative mx-auto w-full max-w-[380px]">
+                <div class="phone-shell">
+                  <div class="phone-screen p-4 sm:p-5">
+                    <div class="mb-4 flex items-center justify-between">
+                      <span class="text-[0.62rem] uppercase tracking-[0.2em] text-white/60">9:41</span>
+                      <div class="flex items-center gap-1.5">
+                        <span class="h-2.5 w-2.5 rounded-full bg-white/75"></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-white/60"></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-white/40"></span>
+                      </div>
+                    </div>
+
+                    <div class="mb-5 flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 text-[0.62rem] font-semibold text-white/80">DA</div>
+                        <div>
+                          <div class="text-sm font-medium text-white">DENTE AZUL</div>
+                          <div class="text-[0.65rem] text-white/55">Nó Conectado via Bluetooth</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="theme-chips flex gap-2 rounded-full border border-white/10 bg-black/20 p-1">
+                          <button class="theme-btn active" data-theme="dark" aria-label="Tema preto" title="Tema preto">
+                            <span class="theme-swatch bg-black"></span>
+                          </button>
+                          <button class="theme-btn" data-theme="neutral" aria-label="Tema cinza" title="Tema cinza">
+                            <span class="theme-swatch bg-zinc-500"></span>
+                          </button>
+                          <button class="theme-btn" data-theme="light" aria-label="Tema claro" title="Tema claro">
+                            <span class="theme-swatch bg-white"></span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mb-6 flex items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[0.62rem] uppercase tracking-[0.18em] text-emerald-300">
+                      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                      Rede ativa
+                    </div>
+
+                    <div class="space-y-4">
+                      <div class="flex justify-start">
+                        <div class="message-bubble bg-[#1B1B1B] text-white/90 shadow-[0_1px_0_rgba(255,255,255,0.04)]">
+                          <p class="text-[0.74rem] leading-5">Chegou no aeroporto. Consegue me mandar o mapa da fila vip?</p>
+                          <div class="mt-1 flex items-center justify-end gap-2 text-[0.56rem] tracking-[0.04em] text-white/45">
+                            <span>14:32</span>
+                            <span>•</span>
+                            <span>24 Out</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex justify-end">
+                        <div class="message-bubble bg-white text-black shadow-[0_1px_0_rgba(0,0,0,0.05)]">
+                          <p class="text-[0.74rem] leading-5">Claro. Já vou te mandar a rota e a fila do embarque.</p>
+                          <div class="mt-1 flex items-center justify-end gap-2 text-[0.56rem] tracking-[0.04em] text-black/50">
+                            <span>14:32</span>
+                            <span>•</span>
+                            <span>24 Out</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex justify-start">
+                        <div class="message-bubble bg-[#1B1B1B] text-white/90 shadow-[0_1px_0_rgba(255,255,255,0.04)]">
+                          <div class="flex items-center gap-2">
+                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/6 text-[0.7rem] text-white/80">▶</span>
+                            <div class="flex-1">
+                              <div class="h-2.5 w-20 rounded-full bg-white/10"></div>
+                              <div class="mt-1 h-2.5 w-12 rounded-full bg-white/5"></div>
+                            </div>
+                          </div>
+                          <div class="mt-2 flex items-center justify-end gap-2 text-[0.56rem] tracking-[0.04em] text-white/45">
+                            <span>14:32</span>
+                            <span>•</span>
+                            <span>24 Out</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-7 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/30 px-3 py-3">
+                      <button class="flex h-10 w-10 items-center justify-center rounded-full bg-white/6 text-lg text-white/90 transition hover:bg-white/10" aria-label="Gravar áudio">
+                        🎙
+                      </button>
+                      <div class="flex-1 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2.5 text-[0.72rem] text-white/45">
+                        Mensagem segura
+                      </div>
+                      <button class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black transition hover:bg-white/90" aria-label="Enviar mensagem">
+                        ➤
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="how" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div class="mb-12 max-w-2xl">
+            <p class="tech-pill mb-3 text-sm text-white/55">Como Funciona</p>
+            <h2 class="text-3xl font-bold tracking-[-0.05em] text-white sm:text-4xl">O efeito salto da rede</h2>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-3">
+            <article class="glass-card group rounded-3xl p-6 transition duration-300 hover:-translate-y-1 hover:border-white/10">
+              <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl">01</div>
+              <h3 class="mb-3 text-xl font-semibold text-white">Zero Internet</h3>
+              <p class="text-base leading-7 text-white/60">
+                Não precisa de Wi‑Fi, 4G, roteador ou chip SIM. O app cria uma rede local direta entre dispositivos próximos.
+              </p>
+            </article>
+
+            <article class="glass-card group rounded-3xl p-6 transition duration-300 hover:-translate-y-1 hover:border-white/10">
+              <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl">02</div>
+              <h3 class="mb-3 text-xl font-semibold text-white">Conexão Direta (P2P)</h3>
+              <p class="text-base leading-7 text-white/60">
+                Seu aparelho descobre e conversa direto com outros em um raio de até 30 metros, com latência mínima e alta confiabilidade.
+              </p>
+            </article>
+
+            <article class="glass-card group rounded-3xl p-6 transition duration-300 hover:-translate-y-1 hover:border-white/10">
+              <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl">03</div>
+              <h3 class="mb-3 text-xl font-semibold text-white">Rede em Malha (Mesh)</h3>
+              <p class="text-base leading-7 text-white/60">
+                Em distâncias maiores, como dentro de um avião, a mensagem salta criptografada entre celulares até chegar ao destino final.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="features" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div class="mb-12 flex items-end justify-between gap-4">
+            <div class="max-w-xl">
+              <p class="tech-pill mb-3 text-sm text-white/55">Recursos</p>
+              <h2 class="text-3xl font-bold tracking-[-0.05em] text-white sm:text-4xl">Tudo que você precisa para se comunicar offline</h2>
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <article class="glass-card rounded-3xl p-6">
+              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl">🎙</div>
+              <h3 class="mb-3 text-lg font-semibold text-white">Áudio e Texto</h3>
+              <p class="text-sm leading-6 text-white/60">Envio rápido de notas de voz e mensagens diretas sem depender de nenhuma infraestrutura online.</p>
+            </article>
+
+            <article class="glass-card rounded-3xl p-6">
+              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl">◐</div>
+              <h3 class="mb-3 text-lg font-semibold text-white">Controle de Temas</h3>
+              <p class="text-sm leading-6 text-white/60">Alternância instantânea entre modo Escuro, Cinza e Claro para conforto visual em qualquer ambiente.</p>
+            </article>
+
+            <article class="glass-card rounded-3xl p-6">
+              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl">🔊</div>
+              <h3 class="mb-3 text-lg font-semibold text-white">Alertas Sonoros</h3>
+              <p class="text-sm leading-6 text-white/60">Notificações discretas com som de pop/click e controle deslizante de volume para cada canal de comunicação.</p>
+            </article>
+
+            <article class="glass-card rounded-3xl p-6">
+              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xl">🔒</div>
+              <h3 class="mb-3 text-lg font-semibold text-white">Privacidade Total</h3>
+              <p class="text-sm leading-6 text-white/60">Criptografia ponta a ponta e nenhum servidor central para armazenar suas conversas ou metadados.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="cases" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div class="mb-12 max-w-2xl">
+            <p class="tech-pill mb-3 text-sm text-white/55">Casos de Uso</p>
+            <h2 class="text-3xl font-bold tracking-[-0.05em] text-white sm:text-4xl">Onde o Bluetooth conversa melhor</h2>
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-3">
+            <article class="glass-card overflow-hidden rounded-[28px] p-0">
+              <div class="h-52 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.18),_transparent_35%),linear-gradient(135deg,#161616,#0c0c0c)] p-6">
+                <div class="mb-8 text-4xl">✈️</div>
+                <span class="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/60">Dentro do Avião</span>
+              </div>
+              <div class="p-6">
+                <h3 class="mb-3 text-xl font-semibold text-white">Converse sem pagar Wi‑Fi</h3>
+                <p class="text-base leading-7 text-white/60">Troque mensagens e áudios entre passageiros sem depender da rede da companhia aérea ou do roaming.</p>
+              </div>
+            </article>
+
+            <article class="glass-card overflow-hidden rounded-[28px] p-0">
+              <div class="h-52 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.18),_transparent_35%),linear-gradient(135deg,#1c1c1c,#0f0f0f)] p-6">
+                <div class="mb-8 text-4xl">🏕️</div>
+                <span class="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/60">Trilhas</span>
+              </div>
+              <div class="p-6">
+                <h3 class="mb-3 text-xl font-semibold text-white">Comunicação segura em isolamento</h3>
+                <p class="text-base leading-7 text-white/60">Grupos de trekking e campistas mantêm contato mesmo em áreas rurais sem cobertura ou sinal de celular.</p>
+              </div>
+            </article>
+
+            <article class="glass-card overflow-hidden rounded-[28px] p-0">
+              <div class="h-52 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.18),_transparent_35%),linear-gradient(135deg,#161616,#0c0c0c)] p-6">
+                <div class="mb-8 text-4xl">🎶</div>
+                <span class="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/60">Shows & Festivais</span>
+              </div>
+              <div class="p-6">
+                <h3 class="mb-3 text-xl font-semibold text-white">Messagens quando a rede falha</h3>
+                <p class="text-base leading-7 text-white/60">Mesmo no pico de tráfego, o app mantém grupos sincronizados por bluetooth e mesh local entre os participantes.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="download" class="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
+          <div class="glass-card rounded-[32px] border border-white/10 bg-white/[0.015] p-6 sm:p-8 lg:p-10">
+            <div class="grid items-center gap-8 lg:grid-cols-[1fr_300px]">
+              <div>
+                <p class="tech-pill mb-3 text-sm text-white/55">Download</p>
+                <h2 class="text-3xl font-bold tracking-[-0.05em] text-white sm:text-4xl">Instale a rede de proximidade no seu Android.</h2>
+                <p class="mt-4 max-w-xl text-base leading-7 text-white/60">
+                  Bibliotecas locais, mensagens em malha e comunicação segura sem servidor central — tudo em um app pronto para uso em redes de emergência, viagens e eventos.
+                </p>
+                <div class="mt-6 flex flex-col gap-4 sm:flex-row">
+                  <button class="cta-btn inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black transition hover:-translate-y-0.5 hover:bg-white/90">
+                    Baixar APK
+                  </button>
+                  <a href="https://github.com/" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center rounded-full border border-white/15 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition hover:border-white/25 hover:bg-white/5">
+                    Código-fonte
+                  </a>
+                </div>
+              </div>
+
+              <div class="flex justify-center">
+                <div class="w-full max-w-[220px] rounded-[28px] border border-white/10 bg-[#0e0e0e] p-4 shadow-glow">
+                  <div class="rounded-[20px] border border-white/10 bg-black p-4">
+                    <div class="mb-5 flex items-center justify-between">
+                      <span class="text-[0.6rem] uppercase tracking-[0.18em] text-white/50">DENTE AZUL</span>
+                      <span class="text-[0.6rem] text-emerald-300">Online</span>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="h-2.5 w-16 rounded-full bg-white/10"></div>
+                      <div class="h-2.5 w-10 rounded-full bg-white/5"></div>
+                      <div class="mt-5 flex items-center justify-between rounded-full border border-white/10 bg-white/[0.02] px-3 py-2">
+                        <span class="text-[0.65rem] text-white/50">apk v1.2</span>
+                        <span class="text-[0.65rem] text-white/70">4.8 MB</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="relative z-10 border-t border-white/10 bg-black/40">
+        <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 text-sm text-white/55 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div>
+            <p class="font-medium text-white">DENTE AZUL</p>
+            <p class="mt-1">Projeto de comunicação offline via Bluetooth LE Mesh.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <a href="https://github.com/" target="_blank" rel="noreferrer" class="transition hover:text-white">Código-fonte</a>
+            <a href="#" class="transition hover:text-white">Privacidade</a>
+            <span>© 2026 DENTE AZUL</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const body = document.body;
+      const themeButtons = document.querySelectorAll('.theme-btn');
+
+      function applyTheme(theme) {
+        body.classList.remove('theme-dark', 'theme-neutral', 'theme-light');
+        body.classList.add(`theme-${theme}`);
+
+        themeButtons.forEach((button) => {
+          button.classList.toggle('active', button.dataset.theme === theme);
+          button.style.opacity = button.dataset.theme === theme ? '1' : '0.6';
+        });
+      }
+
+      themeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          applyTheme(button.dataset.theme);
+        });
+      });
+
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      function playClickSound() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(820, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.06, audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.08);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.1);
+      }
+
+      document.querySelectorAll('.cta-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (audioContext.state === 'suspended') {
+            audioContext.resume();
+          }
+          playClickSound();
+        });
+      });
+
+      document.querySelectorAll('a, button').forEach((element) => {
+        element.addEventListener('mouseenter', () => {
+          if (element.tagName !== 'BUTTON' && !element.classList.contains('cta-btn')) return;
+          if (audioContext.state === 'suspended') {
+            audioContext.resume();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
